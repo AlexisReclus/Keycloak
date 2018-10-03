@@ -37,7 +37,7 @@ mv keycloak.jks /opt/jboss/keycloak/standalone/configuration/
 now move that file into place
 
 Restart keycloak
-`````
+````
 cd /opt/jboss/keycloak/bin/
 ./jboss-cli.sh --connect command=:reload
 ````
