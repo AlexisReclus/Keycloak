@@ -1,0 +1,121 @@
+Update your docker compose file - `keycloak-postgres.yml` (initially adapted from https://github.com/jboss-dockerfiles/keycloak/blob/master/docker-compose-examples/keycloak-postgres.yml)
+
+```
+version: '3'
+
+volumes:
+  postgres_data:
+      driver: local
+  keycloak_data:
+      driver: local
+
+services:
+  postgres:
+      image: postgres
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      environment:
+        POSTGRES_DB: keycloak
+        POSTGRES_USER: keycloak
+        POSTGRES_PASSWORD: password
+  keycloak:
+      image: jboss/keycloak
+      environment:
+        DB_VENDOR: postgres
+        DB_ADDR: postgres
+        DB_DATABASE: keycloak
+        DB_USER: keycloak
+        DB_PASSWORD: password
+        KEYCLOAK_USER: admin
+        KEYCLOAK_PASSWORD: Pa55w0rd
+        # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
+        #JDBC_PARAMS: "ssl=true"
+      ports:
+        - 8080:8080
+        - 8443:8443
+      depends_on:
+        - postgres
+      volumes:
+        - keycloak_data:/opt/jboss/keycloak/standalone
+
+```
+
+run the container
+```
+docker-compose -f keycloak-postgres.yml up
+```
+
+in a separate tab
+
+identify the running container, and connect to it, `keycloak-postgres_keycloak_1` is probably the default name
+```
+docker ps
+docker exec -it keycloak-postgres_keycloak_1 /bin/bash
+```
+
+generate the self signed cert as per https://www.keycloak.org/docs/4.3/server_installation/index.html#enabling-ssl-https-for-the-keycloak-server
+
+```
+keytool -genkey -alias localhost -keyalg RSA -keystore keycloak.jks -validity 10950
+```
+
+Use `secret` for the password, and other answers as below
+
+```
+What is your first and last name?
+  [Unknown]:  localhost
+What is the name of your organizational unit?
+  [Unknown]:  keycloak
+What is the name of your organization?
+  [Unknown]:
+What is the name of your City or Locality?
+  [Unknown]:
+What is the name of your State or Province?
+  [Unknown]:
+What is the two-letter country code for this unit?
+  [Unknown]:
+Is CN=localhost, OU=keycloak, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
+  [no]:  yes
+```
+
+now move that file into place
+
+```
+mv keycloak.jks /opt/jboss/keycloak/standalone/configuration/
+```
+
+now edit the config
+
+```
+vi /opt/jboss/keycloak/standalone/configuration/standalone.xml
+```
+
+add this just inside the `<security-realms>` section
+
+```
+<security-realm name="UndertowRealm">
+    <server-identities>
+        <ssl>
+            <keystore path="keycloak.jks" relative-to="jboss.server.config.dir" keystore-password="secret" />
+        </ssl>
+    </server-identities>
+</security-realm>
+```
+
+Then find `<server name="default-server">`, search in vim with
+
+`/server name`
+
+Replace 
+`<https-listener name="https" socket-binding="https" proxy-address-forwarding="${env.PROXY_ADDRESS_FORWARDING:false}" security-realm="ApplicationRealm" enable-http2="true"/>`
+
+with
+`<https-listener name="https" socket-binding="https" security-realm="UndertowRealm"/>`
+
+Restart keycloak
+```
+cd /opt/jboss/keycloak/bin/
+./jboss-cli.sh --connect command=:reload
+```
+
+Config will be saved if container is restarted
