@@ -1,8 +1,9 @@
 Identify the running container, and connect to it, `keycloak-postgres_keycloak_1` is probably the default name
 
-1. ~ docker ps
-2. ~ docker exec -it keycloak-postgres_keycloak_1 /bin/bash
-
+```
+docker ps
+docker exec -it keycloak-postgres_keycloak_1 /bin/bash
+```
 
 generate the self signed cert as per https://www.keycloak.org/docs/4.3/server_installation/index.html#enabling-ssl-https-for-the-keycloak-server
 ~ keytool -genkey -alias localhost -keyalg RSA -keystore keycloak.jks -validity 10950
