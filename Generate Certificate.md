@@ -12,6 +12,8 @@ keytool -genkey -alias localhost -keyalg RSA -keystore keycloak.jks -validity 10
 
 
 Use `secret` for the password, and other answers as below
+````
+Use `secret` for the password, and other answers as below
 What is your first and last name?
   [Unknown]:  localhost
 What is the name of your organizational unit?
@@ -26,6 +28,7 @@ What is the two-letter country code for this unit?
   [Unknown]:
 Is CN=localhost, OU=keycloak, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
   [no]:  yes
+  
 
 now move that file into place
 ````
