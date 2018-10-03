@@ -10,9 +10,9 @@ This is a set of Docker images related to Keycloak.
 
 
 To launch your app using the command line in the application folder:
-1. ~ cd docker-compose-examples
+1. ```cd docker-compose-examples```
 2. launch docker
-3. ~ docker-compose -f keycloak-postgres.yml up
+3. ```docker-compose -f keycloak-postgres.yml up```
 4. Generate your certificate using the tutorial https://github.com/AlexisReclus/Keycloak/blob/master/Generate%20Certificate
 
 5. Running the application on https://localhost:8443/auth/
